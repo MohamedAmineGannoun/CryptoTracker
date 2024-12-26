@@ -9,7 +9,8 @@ import SwiftUI
 
 struct HomeView: View {
     
-    @State private var showPortfolio = false
+    @EnvironmentObject private var viewModel : HomeViewModel
+    @State private var showPortfolio : Bool = false
     
     var body: some View {
         ZStack{
@@ -20,7 +21,14 @@ struct HomeView: View {
             VStack{
                 homeHeader
                 
-                Spacer(minLength: 0)
+                columnsTitles
+                
+                if showPortfolio {
+                    portfolioCoinsList
+                }else{
+                    allCoinsList
+                }
+                
             }
         }
     }
@@ -30,6 +38,7 @@ struct HomeView: View {
     NavigationStack{
         HomeView()
             .toolbar(.hidden)
+            .environmentObject(DeveloperPreview.instance.homeViewModel)
     }
 }
 
@@ -59,4 +68,42 @@ extension HomeView {
         }
         .padding(.horizontal)
     }
+    
+    private var allCoinsList : some View {
+        List{
+            ForEach(viewModel.allCoins) { coin in
+                CoinRowView(coin: coin, showHoldingsColumn: false)
+                    .listRowInsets(.init(top: 10, leading: 0, bottom: 10, trailing: 10))
+            }
+        }
+        .listStyle(PlainListStyle())
+        .transition(.move(edge: .leading))
+    }
+    
+    private var portfolioCoinsList : some View {
+        List{
+            ForEach(viewModel.portfolioCoins) { coin in
+                CoinRowView(coin: coin, showHoldingsColumn: true)
+                    .listRowInsets(.init(top: 10, leading: 0, bottom: 10, trailing: 10))
+            }
+        }
+        .listStyle(PlainListStyle())
+        .transition(.move(edge: .trailing))
+    }
+    
+    private var columnsTitles : some View {
+        HStack {
+            Text("Coin")
+            Spacer()
+            if showPortfolio {
+                Text("Holdings")
+            }
+            Spacer()
+            Text("Price")
+        }
+        .font(.caption)
+        .foregroundStyle(Color.theme.secondaryText)
+        .padding(.horizontal)
+    }
+    
 }
