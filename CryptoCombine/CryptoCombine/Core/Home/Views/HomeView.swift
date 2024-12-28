@@ -22,7 +22,7 @@ struct HomeView: View {
                 homeHeader
                 
                 SearchBarView(searchText: $viewModel.searchText)
-                    .padding(.horizontal)
+                    .padding()
                 
                 columnsTitles
                 
