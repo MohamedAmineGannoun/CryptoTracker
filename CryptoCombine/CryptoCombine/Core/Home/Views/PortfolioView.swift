@@ -39,6 +39,11 @@ struct PortfolioView: View {
                 }
 
             }
+            .onChange(of: viewModel.searchText) { _, newValue in
+                if newValue == "" {
+                    removeSelectedCoin()
+                }
+            }
         }
     }
 }
@@ -53,13 +58,13 @@ extension PortfolioView {
     private var coinLogoList : some View {
         ScrollView(.horizontal, showsIndicators: false){
             LazyHStack(spacing: 10) {
-                ForEach(viewModel.allCoins) { coin in
+                ForEach(viewModel.searchText.isEmpty ? viewModel.portfolioCoins : viewModel.allCoins) { coin in
                     CoinLogoView(coin: coin)
                         .frame(width: 75)
                         .padding(4)
                         .onTapGesture(perform: {
                             withAnimation(.easeIn) {
-                                selectedCoin = coin
+                                updateSelectedCoin(coin: coin)
                             }
                         })
                         .background(
@@ -71,6 +76,18 @@ extension PortfolioView {
             }
             .padding()
         }
+    }
+    
+    private func updateSelectedCoin(coin: CoinModel){
+        selectedCoin = coin
+        
+        if let portfolioCoin = viewModel.portfolioCoins.first(where: {$0.id == coin.id}),
+           let amount = portfolioCoin.currentHolding {
+            quantityText = "\(amount)"
+        }else{
+            quantityText = ""
+        }
+        
     }
     
     private func getCurrentValue() -> Double {
@@ -126,11 +143,12 @@ extension PortfolioView {
     }
     
     private func saveButtonPressed(){
-        guard let coin = selectedCoin else{
+        guard let coin = selectedCoin, let amount = Double(quantityText) else{
             return
         }
         
         // Save to portfolio
+        viewModel.updatePortfolio(coin: coin, amount: amount)
         
         // show checkmark
         withAnimation(.easeIn){
