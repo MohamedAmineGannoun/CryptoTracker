@@ -17,7 +17,7 @@ class CoinDataService {
         getCoins()
     }
     
-    private func getCoins(){
+    func getCoins(){
         
         
         print("get coins called ")
