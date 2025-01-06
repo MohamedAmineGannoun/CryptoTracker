@@ -12,12 +12,18 @@ struct HomeView: View {
     @EnvironmentObject private var viewModel : HomeViewModel
     @State private var showPortfolio : Bool = false // animate right
     @State private var showPortfolioView : Bool = false
+    @State private var selectedCoin : CoinModel? = nil
+    @State private var showDetailView: Bool = false
     
     var body: some View {
         ZStack{
             //background
             Color.theme.background
                 .ignoresSafeArea()
+                .sheet(isPresented: $showPortfolioView) {
+                    PortfolioView()
+                        .environmentObject(viewModel)
+                }
             //content
             VStack{
                 homeHeader
@@ -36,11 +42,14 @@ struct HomeView: View {
                 }
                 
             }
+            
         }
-        .sheet(isPresented: $showPortfolioView) {
-            PortfolioView()
-                .environmentObject(viewModel)
-        }
+        .background(
+            NavigationLink(
+                destination: DetailLoadingView(coin: $selectedCoin),
+                isActive: $showDetailView,
+                label: { EmptyView() })
+        )
     }
 }
 
@@ -89,6 +98,10 @@ extension HomeView {
             ForEach(viewModel.allCoins) { coin in
                 CoinRowView(coin: coin, showHoldingsColumn: false)
                     .listRowInsets(.init(top: 10, leading: 0, bottom: 10, trailing: 10))
+                    .onTapGesture {
+                        segue(coin: coin)
+                    }
+                    .listRowBackground(Color.theme.background)
             }
         }
         .listStyle(PlainListStyle())
@@ -100,10 +113,19 @@ extension HomeView {
             ForEach(viewModel.portfolioCoins) { coin in
                 CoinRowView(coin: coin, showHoldingsColumn: true)
                     .listRowInsets(.init(top: 10, leading: 0, bottom: 10, trailing: 10))
+                    .onTapGesture {
+                        segue(coin: coin)
+                    }
+                    .listRowBackground(Color.theme.background)
             }
         }
         .listStyle(PlainListStyle())
         .transition(.move(edge: .trailing))
+    }
+    
+    private func segue(coin: CoinModel){
+        selectedCoin = coin
+        showDetailView.toggle()
     }
     
     private var columnsTitles : some View {
