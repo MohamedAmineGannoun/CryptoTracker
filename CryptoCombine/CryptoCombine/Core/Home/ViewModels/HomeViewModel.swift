@@ -32,13 +32,6 @@ class HomeViewModel : ObservableObject {
     
     func addSubscribers(){
         
-        $allCoins
-            .combineLatest(portfolioDataService.$savedEntities)
-            .map(mapAllCoinsToPortfolioCoins)
-            .sink { [weak self] coinModels in
-                self?.portfolioCoins = coinModels
-            }
-            .store(in: &cancellables)
         
         $searchText
             .combineLatest(coinDataService.$allCoins, $sortOption)
@@ -46,6 +39,15 @@ class HomeViewModel : ObservableObject {
             .map(filterAndSortCoins)
             .sink { [weak self] filteredCoins in
                 self?.allCoins = filteredCoins
+            }
+            .store(in: &cancellables)
+        
+        $allCoins
+            .combineLatest(portfolioDataService.$savedEntities)
+            .map(mapAllCoinsToPortfolioCoins)
+            .sink { [weak self] coinModels in
+                print("called 1 \(coinModels.count)")
+                self?.portfolioCoins = coinModels
             }
             .store(in: &cancellables)
         
